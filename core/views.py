@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from core.autenticacao import login_admin_obrigatorio
 from core.forms import (
+    CategoriaFinanceiraFormulario,
     ContaFinanceiraFormulario,
     ContaPagarFormulario,
     EmpresaFormulario,
@@ -20,9 +21,11 @@ from core.forms import (
     ProfissionalFormulario,
     ReceitaFormulario,
     ServicoFormulario,
+    SubcategoriaFinanceiraFormulario,
     VendaCentralFormulario,
 )
 from core.models import (
+    CategoriaFinanceira,
     ContaFinanceira,
     ContaPagar,
     Empresa,
@@ -33,6 +36,7 @@ from core.models import (
     Receita,
     RegistroAuditoria,
     Servico,
+    SubcategoriaFinanceira,
     UsuarioAdmin,
     VendaCentral,
 )
@@ -172,16 +176,16 @@ CONFIGURACOES = {
         "formulario": ReceitaFormulario,
         "titulo": "Receitas",
         "singular": "Receita",
-        "campos_busca": ["descricao", "status", "conta_financeira__nome", "venda__titulo"],
+        "campos_busca": ["descricao", "status", "conta_financeira__nome", "venda__titulo", "categoria__nome", "subcategoria__nome"],
         "colunas": [("descricao", "Descricao"), ("conta_financeira", "Conta"), ("status", "Status"), ("valor", "Valor")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
-            ("Lancamento", ["descricao", "venda", "conta_financeira", "data_recebimento"]),
+            ("Lancamento", ["descricao", "venda", "conta_financeira", "categoria", "subcategoria", "data_recebimento"]),
             ("Financeiro", ["valor", "status", "ativo"]),
             ("Notas", ["observacoes"]),
         ],
         "secoes_detalhe": [
-            ("Resumo", ["descricao", "venda", "conta_financeira", "data_recebimento", "ativo"]),
+            ("Resumo", ["descricao", "venda", "conta_financeira", "categoria", "subcategoria", "data_recebimento", "ativo"]),
             ("Financeiro", ["valor", "status", "observacoes"]),
             ("Auditoria", ["criado_em", "atualizado_em"]),
         ],
@@ -191,16 +195,16 @@ CONFIGURACOES = {
         "formulario": ContaPagarFormulario,
         "titulo": "Contas a Pagar",
         "singular": "Conta a Pagar",
-        "campos_busca": ["descricao", "status", "conta_financeira__nome", "fornecedor__nome"],
+        "campos_busca": ["descricao", "status", "conta_financeira__nome", "fornecedor__nome", "categoria__nome", "subcategoria__nome"],
         "colunas": [("descricao", "Descricao"), ("fornecedor", "Fornecedor"), ("status", "Status"), ("valor", "Valor")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
-            ("Lancamento", ["descricao", "fornecedor", "conta_financeira", "data_vencimento"]),
+            ("Lancamento", ["descricao", "fornecedor", "conta_financeira", "categoria", "subcategoria", "data_vencimento"]),
             ("Financeiro", ["valor", "status", "ativo"]),
             ("Notas", ["observacoes"]),
         ],
         "secoes_detalhe": [
-            ("Resumo", ["descricao", "fornecedor", "conta_financeira", "data_vencimento", "ativo"]),
+            ("Resumo", ["descricao", "fornecedor", "conta_financeira", "categoria", "subcategoria", "data_vencimento", "ativo"]),
             ("Financeiro", ["valor", "status", "observacoes"]),
             ("Auditoria", ["criado_em", "atualizado_em"]),
         ],
@@ -220,6 +224,34 @@ CONFIGURACOES = {
         "secoes_detalhe": [
             ("Resumo", ["nome", "instituicao", "saldo_inicial", "ativo"]),
             ("Operacao", ["observacoes", "criado_em", "atualizado_em"]),
+        ],
+    },
+    "categorias": {
+        "modelo": CategoriaFinanceira,
+        "formulario": CategoriaFinanceiraFormulario,
+        "titulo": "Categorias",
+        "singular": "Categoria",
+        "campos_busca": ["nome", "observacoes"],
+        "colunas": [("nome", "Nome"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [("Estrutura", ["nome", "ativo"]), ("Notas", ["observacoes"])],
+        "secoes_detalhe": [
+            ("Resumo", ["nome", "ativo"]),
+            ("Estrutura", ["observacoes", "criado_em", "atualizado_em"]),
+        ],
+    },
+    "subcategorias": {
+        "modelo": SubcategoriaFinanceira,
+        "formulario": SubcategoriaFinanceiraFormulario,
+        "titulo": "Subcategorias",
+        "singular": "Subcategoria",
+        "campos_busca": ["nome", "categoria__nome", "observacoes"],
+        "colunas": [("nome", "Nome"), ("categoria", "Categoria"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [("Estrutura", ["categoria", "nome", "ativo"]), ("Notas", ["observacoes"])],
+        "secoes_detalhe": [
+            ("Resumo", ["categoria", "nome", "ativo"]),
+            ("Estrutura", ["observacoes", "criado_em", "atualizado_em"]),
         ],
     },
 }
@@ -296,6 +328,8 @@ def dashboard(request):
             ("Receitas", Receita.objects.count()),
             ("Contas a Pagar", ContaPagar.objects.count()),
             ("Contas Financeiras", ContaFinanceira.objects.count()),
+            ("Categorias", CategoriaFinanceira.objects.count()),
+            ("Subcategorias", SubcategoriaFinanceira.objects.count()),
             ("Auditorias", RegistroAuditoria.objects.count()),
         ],
     }
@@ -453,6 +487,8 @@ def detalhe(request, entidade, pk):
         "receitas": [("resumo", "Resumo"), ("conta", "Conta Financeira"), ("auditoria", "Auditoria")],
         "contas_pagar": [("resumo", "Resumo"), ("conta", "Conta Financeira"), ("auditoria", "Auditoria")],
         "contas_financeiras": [("resumo", "Resumo"), ("entradas", "Entradas"), ("saidas", "Saidas"), ("auditoria", "Auditoria")],
+        "categorias": [("resumo", "Resumo"), ("auditoria", "Auditoria")],
+        "subcategorias": [("resumo", "Resumo"), ("auditoria", "Auditoria")],
     }[entidade]
     aba_atual = request.GET.get("aba") or abas[0][0]
     auditorias = RegistroAuditoria.objects.filter(entidade=configuracao["singular"], objeto_id=objeto.pk)[:10]
@@ -497,25 +533,69 @@ def detalhe(request, entidade, pk):
     elif entidade == "receitas":
         secoes_por_aba = {
             "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
-            "conta": [("Conta Financeira", [("Nome", objeto.conta_financeira.nome), ("Instituicao", objeto.conta_financeira.instituicao or "-"), ("Saldo inicial", objeto.conta_financeira.saldo_inicial)])],
+            "conta": [
+                (
+                    "Conta Financeira",
+                    [
+                        ("Nome", objeto.conta_financeira.nome),
+                        ("Instituicao", objeto.conta_financeira.instituicao or "-"),
+                        ("Saldo inicial", objeto.conta_financeira.saldo_inicial),
+                        ("Categoria", objeto.categoria),
+                        ("Subcategoria", objeto.subcategoria),
+                    ],
+                )
+            ],
             "auditoria": [],
         }
     elif entidade == "contas_pagar":
         secoes_por_aba = {
             "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
-            "conta": [("Conta Financeira", [("Nome", objeto.conta_financeira.nome), ("Instituicao", objeto.conta_financeira.instituicao or "-"), ("Saldo inicial", objeto.conta_financeira.saldo_inicial)])],
+            "conta": [
+                (
+                    "Conta Financeira",
+                    [
+                        ("Nome", objeto.conta_financeira.nome),
+                        ("Instituicao", objeto.conta_financeira.instituicao or "-"),
+                        ("Saldo inicial", objeto.conta_financeira.saldo_inicial),
+                        ("Categoria", objeto.categoria),
+                        ("Subcategoria", objeto.subcategoria),
+                    ],
+                )
+            ],
             "auditoria": [],
         }
     elif entidade == "contas_financeiras":
         total_entradas = sum((item.valor for item in objeto.receitas.filter(ativo=True)), Decimal("0"))
         total_saidas = sum((item.valor for item in objeto.contas_pagar.filter(ativo=True)), Decimal("0"))
+        ultima_entrada = objeto.receitas.order_by("-data_recebimento").first()
+        ultima_saida = objeto.contas_pagar.order_by("-data_vencimento").first()
         secoes_por_aba = {
             "resumo": [
                 secoes_detalhe[0],
                 ("Saldo Atual", [("Entradas", total_entradas), ("Saidas", total_saidas), ("Saldo calculado", objeto.saldo_inicial + total_entradas - total_saidas)]),
             ],
-            "entradas": [("Entradas registradas", [("Quantidade", objeto.receitas.filter(ativo=True).count()), ("Total", total_entradas)])],
-            "saidas": [("Saidas registradas", [("Quantidade", objeto.contas_pagar.filter(ativo=True).count()), ("Total", total_saidas)])],
+            "entradas": [
+                (
+                    "Entradas registradas",
+                    [
+                        ("Quantidade", objeto.receitas.filter(ativo=True).count()),
+                        ("Total", total_entradas),
+                        ("Ultima categoria", ultima_entrada.categoria if ultima_entrada else "-"),
+                        ("Ultima subcategoria", ultima_entrada.subcategoria if ultima_entrada else "-"),
+                    ],
+                )
+            ],
+            "saidas": [
+                (
+                    "Saidas registradas",
+                    [
+                        ("Quantidade", objeto.contas_pagar.filter(ativo=True).count()),
+                        ("Total", total_saidas),
+                        ("Ultima categoria", ultima_saida.categoria if ultima_saida else "-"),
+                        ("Ultima subcategoria", ultima_saida.subcategoria if ultima_saida else "-"),
+                    ],
+                )
+            ],
             "auditoria": [],
         }
     else:

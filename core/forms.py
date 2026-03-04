@@ -1,6 +1,7 @@
 from django import forms
 
 from core.models import (
+    CategoriaFinanceira,
     ContaFinanceira,
     ContaPagar,
     Empresa,
@@ -10,6 +11,7 @@ from core.models import (
     Profissional,
     Receita,
     Servico,
+    SubcategoriaFinanceira,
     UsuarioAdmin,
     VendaCentral,
 )
@@ -141,6 +143,18 @@ class ContaFinanceiraFormulario(FormularioBase):
         fields = ["nome", "instituicao", "saldo_inicial", "ativo", "observacoes"]
 
 
+class CategoriaFinanceiraFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = CategoriaFinanceira
+        fields = ["nome", "ativo", "observacoes"]
+
+
+class SubcategoriaFinanceiraFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = SubcategoriaFinanceira
+        fields = ["categoria", "nome", "ativo", "observacoes"]
+
+
 class VendaCentralFormulario(FormularioBase):
     class Meta(FormularioBase.Meta):
         model = VendaCentral
@@ -150,10 +164,32 @@ class VendaCentralFormulario(FormularioBase):
 class ReceitaFormulario(FormularioBase):
     class Meta(FormularioBase.Meta):
         model = Receita
-        fields = ["descricao", "venda", "conta_financeira", "data_recebimento", "valor", "status", "ativo", "observacoes"]
+        fields = [
+            "descricao",
+            "venda",
+            "conta_financeira",
+            "categoria",
+            "subcategoria",
+            "data_recebimento",
+            "valor",
+            "status",
+            "ativo",
+            "observacoes",
+        ]
 
 
 class ContaPagarFormulario(FormularioBase):
     class Meta(FormularioBase.Meta):
         model = ContaPagar
-        fields = ["descricao", "fornecedor", "conta_financeira", "data_vencimento", "valor", "status", "ativo", "observacoes"]
+        fields = [
+            "descricao",
+            "fornecedor",
+            "conta_financeira",
+            "categoria",
+            "subcategoria",
+            "data_vencimento",
+            "valor",
+            "status",
+            "ativo",
+            "observacoes",
+        ]

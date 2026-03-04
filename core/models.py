@@ -127,6 +127,25 @@ class ContaFinanceira(ModeloTemporal):
         return self.nome
 
 
+class CategoriaFinanceira(ModeloTemporal):
+    nome = models.CharField(max_length=120)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class SubcategoriaFinanceira(ModeloTemporal):
+    categoria = models.ForeignKey(CategoriaFinanceira, on_delete=models.PROTECT, related_name="subcategorias")
+    nome = models.CharField(max_length=120)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.categoria} - {self.nome}"
+
+
 class VendaCentral(ModeloTemporal):
     class Status(models.TextChoices):
         RASCUNHO = "RASCUNHO", "Rascunho"
@@ -160,6 +179,8 @@ class Receita(ModeloTemporal):
     descricao = models.CharField(max_length=150)
     venda = models.ForeignKey(VendaCentral, on_delete=models.SET_NULL, null=True, blank=True, related_name="receitas")
     conta_financeira = models.ForeignKey(ContaFinanceira, on_delete=models.PROTECT, related_name="receitas")
+    categoria = models.ForeignKey(CategoriaFinanceira, on_delete=models.PROTECT, related_name="receitas", null=True, blank=True)
+    subcategoria = models.ForeignKey(SubcategoriaFinanceira, on_delete=models.PROTECT, related_name="receitas", null=True, blank=True)
     data_recebimento = models.DateField(default=timezone.localdate)
     valor = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PREVISTA)
@@ -179,6 +200,8 @@ class ContaPagar(ModeloTemporal):
     descricao = models.CharField(max_length=150)
     fornecedor = models.ForeignKey(Fornecedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="contas_pagar")
     conta_financeira = models.ForeignKey(ContaFinanceira, on_delete=models.PROTECT, related_name="contas_pagar")
+    categoria = models.ForeignKey(CategoriaFinanceira, on_delete=models.PROTECT, related_name="contas_pagar", null=True, blank=True)
+    subcategoria = models.ForeignKey(SubcategoriaFinanceira, on_delete=models.PROTECT, related_name="contas_pagar", null=True, blank=True)
     data_vencimento = models.DateField(default=timezone.localdate)
     valor = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ABERTA)
