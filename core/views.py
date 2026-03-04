@@ -8,8 +8,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from core.autenticacao import login_admin_obrigatorio
-from core.forms import EmpresaFormulario, LoginAdminFormulario, PlanoFormulario, ProfissionalFormulario
-from core.models import Empresa, Plano, Profissional, RegistroAuditoria, UsuarioAdmin
+from core.forms import (
+    EmpresaFormulario,
+    FornecedorFormulario,
+    LoginAdminFormulario,
+    PlanoFormulario,
+    ProdutoFormulario,
+    ProfissionalFormulario,
+    ServicoFormulario,
+)
+from core.models import Empresa, Fornecedor, Plano, Produto, Profissional, RegistroAuditoria, Servico, UsuarioAdmin
 
 
 CONFIGURACOES = {
@@ -36,7 +44,7 @@ CONFIGURACOES = {
         "titulo": "Planos",
         "singular": "Plano",
         "campos_busca": ["nome", "descricao", "ciclo_cobranca"],
-        "colunas": [("nome", "Nome"), ("preco", "Preco"), ("ciclo_cobranca", "Ciclo"), ("ativo", "Status")],
+        "colunas": [("nome", "Nome"), ("preco", "Preço"), ("ciclo_cobranca", "Ciclo"), ("ativo", "Status")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
             ("Estrutura do Plano", ["nome", "descricao", "preco", "ciclo_cobranca"]),
@@ -68,6 +76,84 @@ CONFIGURACOES = {
             ("Banco", ["motor_banco", "nome_banco", "usuario_banco", "host_banco", "porta_banco", "criado_em", "atualizado_em"]),
         ],
     },
+    "fornecedores": {
+        "modelo": Fornecedor,
+        "formulario": FornecedorFormulario,
+        "titulo": "Fornecedores",
+        "singular": "Fornecedor",
+        "campos_busca": ["nome", "documento", "email", "contato_principal"],
+        "colunas": [("nome", "Nome"), ("contato_principal", "Contato"), ("telefone", "Telefone"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Cadastro", ["nome", "documento", "email", "telefone", "contato_principal"]),
+            ("Controle", ["ativo", "observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["nome", "documento", "email", "telefone", "contato_principal", "ativo"]),
+            ("Relacionamento", ["observacoes", "criado_em", "atualizado_em"]),
+        ],
+    },
+    "produtos": {
+        "modelo": Produto,
+        "formulario": ProdutoFormulario,
+        "titulo": "Produtos",
+        "singular": "Produto",
+        "campos_busca": ["nome", "sku", "fornecedor__nome"],
+        "colunas": [("nome", "Nome"), ("sku", "SKU"), ("fornecedor", "Fornecedor"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Catálogo", ["nome", "sku", "fornecedor"]),
+            ("Precificação", ["valor_custo", "valor_venda", "ativo"]),
+            ("Notas", ["observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["nome", "sku", "fornecedor", "ativo"]),
+            ("Precificação", ["valor_custo", "valor_venda", "observacoes"]),
+            ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+    "servicos": {
+        "modelo": Servico,
+        "formulario": ServicoFormulario,
+        "titulo": "Serviços",
+        "singular": "Servico",
+        "campos_busca": ["nome", "descricao"],
+        "colunas": [("nome", "Nome"), ("valor_venda", "Venda"), ("valor_custo", "Custo"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Cadastro", ["nome", "descricao"]),
+            ("Precificação", ["valor_custo", "valor_venda", "ativo"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["nome", "descricao", "ativo"]),
+            ("Precificação", ["valor_custo", "valor_venda"]),
+            ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+}
+
+TEMPLATES_CORE = {
+    "fornecedores": {
+        "listagem": "core/fornecedores_listagem.html",
+        "listagem_hx": "core/parciais/fornecedores_listagem_conteudo.html",
+        "formulario": "core/fornecedor_formulario.html",
+        "detalhe": "core/fornecedor_detalhe.html",
+        "detalhe_hx": "core/parciais/fornecedor_detalhe_conteudo.html",
+    },
+    "produtos": {
+        "listagem": "core/produtos_listagem.html",
+        "listagem_hx": "core/parciais/produtos_listagem_conteudo.html",
+        "formulario": "core/produto_formulario.html",
+        "detalhe": "core/produto_detalhe.html",
+        "detalhe_hx": "core/parciais/produto_detalhe_conteudo.html",
+    },
+    "servicos": {
+        "listagem": "core/servicos_listagem.html",
+        "listagem_hx": "core/parciais/servicos_listagem_conteudo.html",
+        "formulario": "core/servico_formulario.html",
+        "detalhe": "core/servico_detalhe.html",
+        "detalhe_hx": "core/parciais/servico_detalhe_conteudo.html",
+    },
 }
 
 
@@ -90,10 +176,7 @@ def login(request):
         usuario = UsuarioAdmin.objects.filter(email=formulario.cleaned_data["email"], ativo=True).first()
         if usuario and usuario.validar_senha(formulario.cleaned_data["senha"]):
             request.session["usuario_admin_id"] = usuario.id
-            if formulario.cleaned_data["lembrar_me"]:
-                request.session.set_expiry(60 * 60 * 24 * 30)
-            else:
-                request.session.set_expiry(0)
+            request.session.set_expiry(60 * 60 * 24 * 30 if formulario.cleaned_data["lembrar_me"] else 0)
             usuario.registrar_login()
             _registrar_auditoria(request, RegistroAuditoria.Acao.LOGIN, "UsuarioAdmin", usuario)
             return redirect("core_dashboard")
@@ -114,6 +197,9 @@ def dashboard(request):
             ("Profissionais", Profissional.objects.count()),
             ("Planos", Plano.objects.count()),
             ("Empresas", Empresa.objects.count()),
+            ("Fornecedores", Fornecedor.objects.count()),
+            ("Produtos", Produto.objects.count()),
+            ("Serviços", Servico.objects.count()),
             ("Auditorias", RegistroAuditoria.objects.count()),
         ],
     }
@@ -177,6 +263,10 @@ def _obter_configuracao(chave):
     return CONFIGURACOES[chave]
 
 
+def _obter_template(entidade, chave, padrao):
+    return TEMPLATES_CORE.get(entidade, {}).get(chave, padrao)
+
+
 def _montar_secoes(objeto, secoes):
     retorno = []
     for titulo, campos in secoes:
@@ -210,15 +300,12 @@ def listagem(request, entidade):
     queryset = configuracao["modelo"].objects.all()
     queryset, busca, status, ordem = _filtrar_listagem(request, queryset, configuracao)
     pagina = Paginator(queryset, 10).get_page(request.GET.get("pagina"))
-    contexto = {
-        "configuracao": configuracao,
-        "entidade": entidade,
-        "pagina": pagina,
-        "busca": busca,
-        "status": status,
-        "ordem": ordem,
-    }
-    template = "core/parciais/listagem_conteudo.html" if request.headers.get("HX-Request") else "core/listagem.html"
+    contexto = {"configuracao": configuracao, "entidade": entidade, "pagina": pagina, "busca": busca, "status": status, "ordem": ordem}
+    template = (
+        _obter_template(entidade, "listagem_hx", "core/parciais/listagem_conteudo.html")
+        if request.headers.get("HX-Request")
+        else _obter_template(entidade, "listagem", "core/listagem.html")
+    )
     return render(request, template, contexto)
 
 
@@ -231,7 +318,11 @@ def criar(request, entidade):
         _registrar_auditoria(request, RegistroAuditoria.Acao.CRIAR, configuracao["singular"], objeto)
         messages.success(request, f"{configuracao['singular']} criado com sucesso.")
         return redirect(f"core_{entidade}_detalhe", pk=objeto.pk)
-    return render(request, "core/formulario.html", {"configuracao": configuracao, "formulario": formulario, "entidade": entidade})
+    return render(
+        request,
+        _obter_template(entidade, "formulario", "core/formulario.html"),
+        {"configuracao": configuracao, "formulario": formulario, "entidade": entidade},
+    )
 
 
 @login_admin_obrigatorio
@@ -246,7 +337,7 @@ def editar(request, entidade, pk):
         return redirect(f"core_{entidade}_detalhe", pk=objeto.pk)
     return render(
         request,
-        "core/formulario.html",
+        _obter_template(entidade, "formulario", "core/formulario.html"),
         {"configuracao": configuracao, "formulario": formulario, "objeto": objeto, "entidade": entidade},
     )
 
@@ -256,24 +347,12 @@ def detalhe(request, entidade, pk):
     configuracao = _obter_configuracao(entidade)
     objeto = get_object_or_404(configuracao["modelo"], pk=pk)
     abas = {
-        "profissionais": [
-            ("dados", "Dados Gerais"),
-            ("permissoes", "Permissões"),
-            ("auditoria", "Auditoria"),
-        ],
-        "planos": [
-            ("geral", "Geral"),
-            ("cobranca", "Cobrança"),
-            ("limites", "Limites"),
-            ("recursos", "Recursos"),
-            ("auditoria", "Auditoria"),
-        ],
-        "empresas": [
-            ("visao", "Visão Geral"),
-            ("assinatura", "Assinatura"),
-            ("banco", "Banco"),
-            ("auditoria", "Auditoria"),
-        ],
+        "profissionais": [("dados", "Dados Gerais"), ("permissoes", "Permissões"), ("auditoria", "Auditoria")],
+        "planos": [("geral", "Geral"), ("cobranca", "Cobrança"), ("limites", "Limites"), ("recursos", "Recursos"), ("auditoria", "Auditoria")],
+        "empresas": [("visao", "Visão Geral"), ("assinatura", "Assinatura"), ("banco", "Banco"), ("auditoria", "Auditoria")],
+        "fornecedores": [("resumo", "Resumo"), ("produtos", "Produtos"), ("auditoria", "Auditoria")],
+        "produtos": [("resumo", "Resumo"), ("fornecedor", "Fornecedor"), ("auditoria", "Auditoria")],
+        "servicos": [("resumo", "Resumo"), ("auditoria", "Auditoria")],
     }[entidade]
     aba_atual = request.GET.get("aba") or abas[0][0]
     auditorias = RegistroAuditoria.objects.filter(entidade=configuracao["singular"], objeto_id=objeto.pk)[:10]
@@ -292,13 +371,27 @@ def detalhe(request, entidade, pk):
             "recursos": [("Recursos", [("Configuração JSON", objeto.recursos_json)])],
             "auditoria": [],
         }
-    else:
+    elif entidade == "empresas":
         secoes_por_aba = {
             "visao": [secoes_detalhe[0]],
             "assinatura": [secoes_detalhe[1]],
             "banco": [secoes_detalhe[2]],
             "auditoria": [],
         }
+    elif entidade == "fornecedores":
+        secoes_por_aba = {
+            "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
+            "produtos": [("Produtos vinculados", [("Quantidade", objeto.produtos.count()), ("Último cadastro", objeto.produtos.order_by("-criado_em").first() or "-")])],
+            "auditoria": [],
+        }
+    elif entidade == "produtos":
+        secoes_por_aba = {
+            "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
+            "fornecedor": [("Fornecedor", [("Nome", objeto.fornecedor.nome), ("Contato", objeto.fornecedor.contato_principal or "-"), ("E-mail", objeto.fornecedor.email or "-")])],
+            "auditoria": [],
+        }
+    else:
+        secoes_por_aba = {"resumo": [secoes_detalhe[0], secoes_detalhe[1]], "auditoria": []}
     contexto = {
         "configuracao": configuracao,
         "objeto": objeto,
@@ -308,7 +401,11 @@ def detalhe(request, entidade, pk):
         "secoes_detalhe": secoes_por_aba.get(aba_atual, secoes_detalhe),
         "aba_atual": aba_atual,
     }
-    template = "core/parciais/detalhe_conteudo.html" if request.headers.get("HX-Request") else "core/detalhe.html"
+    template = (
+        _obter_template(entidade, "detalhe_hx", "core/parciais/detalhe_conteudo.html")
+        if request.headers.get("HX-Request")
+        else _obter_template(entidade, "detalhe", "core/detalhe.html")
+    )
     return render(request, template, contexto)
 
 
@@ -334,7 +431,10 @@ def excluir(request, entidade, pk):
     objeto = get_object_or_404(configuracao["modelo"], pk=pk)
     if request.method == "POST":
         setattr(objeto, configuracao["campo_ativo"], False)
-        objeto.save(update_fields=[configuracao["campo_ativo"], "atualizado_em"] if hasattr(objeto, "atualizado_em") else [configuracao["campo_ativo"]])
+        campos = [configuracao["campo_ativo"]]
+        if hasattr(objeto, "atualizado_em"):
+            campos.append("atualizado_em")
+        objeto.save(update_fields=campos)
         _registrar_auditoria(request, RegistroAuditoria.Acao.INATIVAR, configuracao["singular"], objeto)
         messages.success(request, f"{configuracao['singular']} arquivado com sucesso.")
         if request.headers.get("HX-Request"):

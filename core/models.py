@@ -79,6 +79,43 @@ class Plano(ModeloTemporal):
         return self.nome
 
 
+class Fornecedor(ModeloTemporal):
+    nome = models.CharField(max_length=150)
+    documento = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    telefone = models.CharField(max_length=30, blank=True)
+    contato_principal = models.CharField(max_length=120, blank=True)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class Produto(ModeloTemporal):
+    nome = models.CharField(max_length=150)
+    sku = models.CharField(max_length=60, unique=True)
+    fornecedor = models.ForeignKey(Fornecedor, on_delete=models.PROTECT, related_name="produtos")
+    valor_custo = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    valor_venda = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class Servico(ModeloTemporal):
+    nome = models.CharField(max_length=150)
+    descricao = models.TextField(blank=True)
+    valor_custo = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    valor_venda = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+
 class Empresa(ModeloTemporal):
     class StatusAssinatura(models.TextChoices):
         ATIVA = "ATIVA", "Ativa"

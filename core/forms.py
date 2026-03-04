@@ -1,6 +1,6 @@
 from django import forms
 
-from core.models import Empresa, Plano, Profissional, UsuarioAdmin
+from core.models import Empresa, Fornecedor, Plano, Produto, Profissional, Servico, UsuarioAdmin
 
 
 class FormularioBase(forms.ModelForm):
@@ -103,3 +103,21 @@ class EmpresaFormulario(FormularioBase):
             "host_banco",
             "porta_banco",
         ]
+
+
+class FornecedorFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = Fornecedor
+        fields = ["nome", "documento", "email", "telefone", "contato_principal", "ativo", "observacoes"]
+
+
+class ProdutoFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = Produto
+        fields = ["nome", "sku", "fornecedor", "valor_custo", "valor_venda", "ativo", "observacoes"]
+
+
+class ServicoFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = Servico
+        fields = ["nome", "descricao", "valor_custo", "valor_venda", "ativo"]
