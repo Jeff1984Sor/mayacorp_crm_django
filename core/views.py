@@ -1,4 +1,5 @@
 import csv
+from decimal import Decimal
 
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -9,15 +10,32 @@ from django.urls import reverse
 
 from core.autenticacao import login_admin_obrigatorio
 from core.forms import (
+    ContaFinanceiraFormulario,
+    ContaPagarFormulario,
     EmpresaFormulario,
     FornecedorFormulario,
     LoginAdminFormulario,
     PlanoFormulario,
     ProdutoFormulario,
     ProfissionalFormulario,
+    ReceitaFormulario,
     ServicoFormulario,
+    VendaCentralFormulario,
 )
-from core.models import Empresa, Fornecedor, Plano, Produto, Profissional, RegistroAuditoria, Servico, UsuarioAdmin
+from core.models import (
+    ContaFinanceira,
+    ContaPagar,
+    Empresa,
+    Fornecedor,
+    Plano,
+    Produto,
+    Profissional,
+    Receita,
+    RegistroAuditoria,
+    Servico,
+    UsuarioAdmin,
+    VendaCentral,
+)
 
 
 CONFIGURACOES = {
@@ -35,7 +53,7 @@ CONFIGURACOES = {
         ],
         "secoes_detalhe": [
             ("Dados Gerais", ["nome_completo", "email", "telefone", "cargo", "ativo"]),
-            ("Observações", ["observacoes", "criado_em", "atualizado_em"]),
+            ("Observacoes", ["observacoes", "criado_em", "atualizado_em"]),
         ],
     },
     "planos": {
@@ -44,7 +62,7 @@ CONFIGURACOES = {
         "titulo": "Planos",
         "singular": "Plano",
         "campos_busca": ["nome", "descricao", "ciclo_cobranca"],
-        "colunas": [("nome", "Nome"), ("preco", "Preço"), ("ciclo_cobranca", "Ciclo"), ("ativo", "Status")],
+        "colunas": [("nome", "Nome"), ("preco", "Preco"), ("ciclo_cobranca", "Ciclo"), ("ativo", "Status")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
             ("Estrutura do Plano", ["nome", "descricao", "preco", "ciclo_cobranca"]),
@@ -66,12 +84,12 @@ CONFIGURACOES = {
         "colunas": [("nome", "Nome"), ("slug", "Slug"), ("status_assinatura", "Assinatura"), ("ativo", "Status")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
-            ("Identificação", ["nome", "slug", "documento", "email", "telefone"]),
+            ("Identificacao", ["nome", "slug", "documento", "email", "telefone"]),
             ("Assinatura", ["ativo", "plano", "status_assinatura", "inicio_assinatura", "fim_teste"]),
             ("Banco de Dados", ["motor_banco", "nome_banco", "usuario_banco", "senha_banco", "host_banco", "porta_banco"]),
         ],
         "secoes_detalhe": [
-            ("Visão Geral", ["nome", "slug", "documento", "email", "telefone", "ativo"]),
+            ("Visao Geral", ["nome", "slug", "documento", "email", "telefone", "ativo"]),
             ("Assinatura", ["plano", "status_assinatura", "inicio_assinatura", "fim_teste"]),
             ("Banco", ["motor_banco", "nome_banco", "usuario_banco", "host_banco", "porta_banco", "criado_em", "atualizado_em"]),
         ],
@@ -102,32 +120,106 @@ CONFIGURACOES = {
         "colunas": [("nome", "Nome"), ("sku", "SKU"), ("fornecedor", "Fornecedor"), ("ativo", "Status")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
-            ("Catálogo", ["nome", "sku", "fornecedor"]),
-            ("Precificação", ["valor_custo", "valor_venda", "ativo"]),
+            ("Catalogo", ["nome", "sku", "fornecedor"]),
+            ("Precificacao", ["valor_custo", "valor_venda", "ativo"]),
             ("Notas", ["observacoes"]),
         ],
         "secoes_detalhe": [
             ("Resumo", ["nome", "sku", "fornecedor", "ativo"]),
-            ("Precificação", ["valor_custo", "valor_venda", "observacoes"]),
+            ("Precificacao", ["valor_custo", "valor_venda", "observacoes"]),
             ("Auditoria", ["criado_em", "atualizado_em"]),
         ],
     },
     "servicos": {
         "modelo": Servico,
         "formulario": ServicoFormulario,
-        "titulo": "Serviços",
+        "titulo": "Servicos",
         "singular": "Servico",
         "campos_busca": ["nome", "descricao"],
         "colunas": [("nome", "Nome"), ("valor_venda", "Venda"), ("valor_custo", "Custo"), ("ativo", "Status")],
         "campo_ativo": "ativo",
         "secoes_formulario": [
             ("Cadastro", ["nome", "descricao"]),
-            ("Precificação", ["valor_custo", "valor_venda", "ativo"]),
+            ("Precificacao", ["valor_custo", "valor_venda", "ativo"]),
         ],
         "secoes_detalhe": [
             ("Resumo", ["nome", "descricao", "ativo"]),
-            ("Precificação", ["valor_custo", "valor_venda"]),
+            ("Precificacao", ["valor_custo", "valor_venda"]),
             ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+    "vendas": {
+        "modelo": VendaCentral,
+        "formulario": VendaCentralFormulario,
+        "titulo": "Vendas",
+        "singular": "Venda",
+        "campos_busca": ["titulo", "cliente", "status"],
+        "colunas": [("titulo", "Titulo"), ("cliente", "Cliente"), ("status", "Status"), ("valor_total", "Total")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Comercial", ["titulo", "cliente", "data_venda", "status"]),
+            ("Valores", ["valor_bruto", "desconto", "ativo"]),
+            ("Notas", ["observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["titulo", "cliente", "data_venda", "status", "ativo"]),
+            ("Financeiro", ["valor_bruto", "desconto", "valor_total", "observacoes"]),
+            ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+    "receitas": {
+        "modelo": Receita,
+        "formulario": ReceitaFormulario,
+        "titulo": "Receitas",
+        "singular": "Receita",
+        "campos_busca": ["descricao", "status", "conta_financeira__nome", "venda__titulo"],
+        "colunas": [("descricao", "Descricao"), ("conta_financeira", "Conta"), ("status", "Status"), ("valor", "Valor")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Lancamento", ["descricao", "venda", "conta_financeira", "data_recebimento"]),
+            ("Financeiro", ["valor", "status", "ativo"]),
+            ("Notas", ["observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["descricao", "venda", "conta_financeira", "data_recebimento", "ativo"]),
+            ("Financeiro", ["valor", "status", "observacoes"]),
+            ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+    "contas_pagar": {
+        "modelo": ContaPagar,
+        "formulario": ContaPagarFormulario,
+        "titulo": "Contas a Pagar",
+        "singular": "Conta a Pagar",
+        "campos_busca": ["descricao", "status", "conta_financeira__nome", "fornecedor__nome"],
+        "colunas": [("descricao", "Descricao"), ("fornecedor", "Fornecedor"), ("status", "Status"), ("valor", "Valor")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Lancamento", ["descricao", "fornecedor", "conta_financeira", "data_vencimento"]),
+            ("Financeiro", ["valor", "status", "ativo"]),
+            ("Notas", ["observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["descricao", "fornecedor", "conta_financeira", "data_vencimento", "ativo"]),
+            ("Financeiro", ["valor", "status", "observacoes"]),
+            ("Auditoria", ["criado_em", "atualizado_em"]),
+        ],
+    },
+    "contas_financeiras": {
+        "modelo": ContaFinanceira,
+        "formulario": ContaFinanceiraFormulario,
+        "titulo": "Contas Financeiras",
+        "singular": "Conta Financeira",
+        "campos_busca": ["nome", "instituicao", "observacoes"],
+        "colunas": [("nome", "Nome"), ("instituicao", "Instituicao"), ("saldo_inicial", "Saldo Inicial"), ("ativo", "Status")],
+        "campo_ativo": "ativo",
+        "secoes_formulario": [
+            ("Estrutura", ["nome", "instituicao", "saldo_inicial", "ativo"]),
+            ("Notas", ["observacoes"]),
+        ],
+        "secoes_detalhe": [
+            ("Resumo", ["nome", "instituicao", "saldo_inicial", "ativo"]),
+            ("Operacao", ["observacoes", "criado_em", "atualizado_em"]),
         ],
     },
 }
@@ -180,7 +272,7 @@ def login(request):
             usuario.registrar_login()
             _registrar_auditoria(request, RegistroAuditoria.Acao.LOGIN, "UsuarioAdmin", usuario)
             return redirect("core_dashboard")
-        messages.error(request, "Credenciais inválidas.")
+        messages.error(request, "Credenciais invalidas.")
     return render(request, "core/login.html", {"formulario": formulario})
 
 
@@ -199,7 +291,11 @@ def dashboard(request):
             ("Empresas", Empresa.objects.count()),
             ("Fornecedores", Fornecedor.objects.count()),
             ("Produtos", Produto.objects.count()),
-            ("Serviços", Servico.objects.count()),
+            ("Servicos", Servico.objects.count()),
+            ("Vendas", VendaCentral.objects.count()),
+            ("Receitas", Receita.objects.count()),
+            ("Contas a Pagar", ContaPagar.objects.count()),
+            ("Contas Financeiras", ContaFinanceira.objects.count()),
             ("Auditorias", RegistroAuditoria.objects.count()),
         ],
     }
@@ -289,7 +385,7 @@ def _filtrar_listagem(request, queryset, configuracao):
         queryset = queryset.filter(consulta)
     if status in {"ativo", "inativo"}:
         queryset = queryset.filter(**{configuracao["campo_ativo"]: status == "ativo"})
-    if ordem.lstrip("-") in [c[0] for c in configuracao["colunas"]]:
+    if ordem.lstrip("-") in [coluna[0] for coluna in configuracao["colunas"]]:
         queryset = queryset.order_by(ordem)
     return queryset, busca, status, ordem
 
@@ -347,41 +443,42 @@ def detalhe(request, entidade, pk):
     configuracao = _obter_configuracao(entidade)
     objeto = get_object_or_404(configuracao["modelo"], pk=pk)
     abas = {
-        "profissionais": [("dados", "Dados Gerais"), ("permissoes", "Permissões"), ("auditoria", "Auditoria")],
-        "planos": [("geral", "Geral"), ("cobranca", "Cobrança"), ("limites", "Limites"), ("recursos", "Recursos"), ("auditoria", "Auditoria")],
-        "empresas": [("visao", "Visão Geral"), ("assinatura", "Assinatura"), ("banco", "Banco"), ("auditoria", "Auditoria")],
+        "profissionais": [("dados", "Dados Gerais"), ("permissoes", "Permissoes"), ("auditoria", "Auditoria")],
+        "planos": [("geral", "Geral"), ("cobranca", "Cobranca"), ("limites", "Limites"), ("recursos", "Recursos"), ("auditoria", "Auditoria")],
+        "empresas": [("visao", "Visao Geral"), ("assinatura", "Assinatura"), ("banco", "Banco"), ("auditoria", "Auditoria")],
         "fornecedores": [("resumo", "Resumo"), ("produtos", "Produtos"), ("auditoria", "Auditoria")],
         "produtos": [("resumo", "Resumo"), ("fornecedor", "Fornecedor"), ("auditoria", "Auditoria")],
         "servicos": [("resumo", "Resumo"), ("auditoria", "Auditoria")],
+        "vendas": [("resumo", "Resumo"), ("receitas", "Receitas"), ("auditoria", "Auditoria")],
+        "receitas": [("resumo", "Resumo"), ("conta", "Conta Financeira"), ("auditoria", "Auditoria")],
+        "contas_pagar": [("resumo", "Resumo"), ("conta", "Conta Financeira"), ("auditoria", "Auditoria")],
+        "contas_financeiras": [("resumo", "Resumo"), ("entradas", "Entradas"), ("saidas", "Saidas"), ("auditoria", "Auditoria")],
     }[entidade]
     aba_atual = request.GET.get("aba") or abas[0][0]
     auditorias = RegistroAuditoria.objects.filter(entidade=configuracao["singular"], objeto_id=objeto.pk)[:10]
     secoes_detalhe = _montar_secoes(objeto, configuracao.get("secoes_detalhe", []))
+
     if entidade == "profissionais":
         secoes_por_aba = {
             "dados": [secoes_detalhe[0], secoes_detalhe[1]],
-            "permissoes": [("Permissões", [("Status do perfil", getattr(objeto, "cargo", "-")), ("Acesso administrativo", "Placeholder MVP")])],
+            "permissoes": [("Permissoes", [("Status do perfil", getattr(objeto, "cargo", "-")), ("Acesso administrativo", "Placeholder MVP")])],
             "auditoria": [],
         }
     elif entidade == "planos":
         secoes_por_aba = {
             "geral": [secoes_detalhe[0]],
-            "cobranca": [("Cobrança", [("Preço", objeto.preco), ("Ciclo", objeto.ciclo_cobranca), ("Ativo", objeto.ativo)])],
+            "cobranca": [("Cobranca", [("Preco", objeto.preco), ("Ciclo", objeto.ciclo_cobranca), ("Ativo", objeto.ativo)])],
             "limites": [secoes_detalhe[1]],
-            "recursos": [("Recursos", [("Configuração JSON", objeto.recursos_json)])],
+            "recursos": [("Recursos", [("Configuracao JSON", objeto.recursos_json)])],
             "auditoria": [],
         }
     elif entidade == "empresas":
-        secoes_por_aba = {
-            "visao": [secoes_detalhe[0]],
-            "assinatura": [secoes_detalhe[1]],
-            "banco": [secoes_detalhe[2]],
-            "auditoria": [],
-        }
+        secoes_por_aba = {"visao": [secoes_detalhe[0]], "assinatura": [secoes_detalhe[1]], "banco": [secoes_detalhe[2]], "auditoria": []}
     elif entidade == "fornecedores":
+        ultimo = objeto.produtos.order_by("-criado_em").first()
         secoes_por_aba = {
             "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
-            "produtos": [("Produtos vinculados", [("Quantidade", objeto.produtos.count()), ("Último cadastro", objeto.produtos.order_by("-criado_em").first() or "-")])],
+            "produtos": [("Produtos vinculados", [("Quantidade", objeto.produtos.count()), ("Ultimo cadastro", ultimo or "-")])],
             "auditoria": [],
         }
     elif entidade == "produtos":
@@ -390,8 +487,40 @@ def detalhe(request, entidade, pk):
             "fornecedor": [("Fornecedor", [("Nome", objeto.fornecedor.nome), ("Contato", objeto.fornecedor.contato_principal or "-"), ("E-mail", objeto.fornecedor.email or "-")])],
             "auditoria": [],
         }
+    elif entidade == "vendas":
+        total_receitas = sum((item.valor for item in objeto.receitas.all()), Decimal("0"))
+        secoes_por_aba = {
+            "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
+            "receitas": [("Receitas vinculadas", [("Quantidade", objeto.receitas.count()), ("Total", total_receitas)])],
+            "auditoria": [],
+        }
+    elif entidade == "receitas":
+        secoes_por_aba = {
+            "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
+            "conta": [("Conta Financeira", [("Nome", objeto.conta_financeira.nome), ("Instituicao", objeto.conta_financeira.instituicao or "-"), ("Saldo inicial", objeto.conta_financeira.saldo_inicial)])],
+            "auditoria": [],
+        }
+    elif entidade == "contas_pagar":
+        secoes_por_aba = {
+            "resumo": [secoes_detalhe[0], secoes_detalhe[1]],
+            "conta": [("Conta Financeira", [("Nome", objeto.conta_financeira.nome), ("Instituicao", objeto.conta_financeira.instituicao or "-"), ("Saldo inicial", objeto.conta_financeira.saldo_inicial)])],
+            "auditoria": [],
+        }
+    elif entidade == "contas_financeiras":
+        total_entradas = sum((item.valor for item in objeto.receitas.filter(ativo=True)), Decimal("0"))
+        total_saidas = sum((item.valor for item in objeto.contas_pagar.filter(ativo=True)), Decimal("0"))
+        secoes_por_aba = {
+            "resumo": [
+                secoes_detalhe[0],
+                ("Saldo Atual", [("Entradas", total_entradas), ("Saidas", total_saidas), ("Saldo calculado", objeto.saldo_inicial + total_entradas - total_saidas)]),
+            ],
+            "entradas": [("Entradas registradas", [("Quantidade", objeto.receitas.filter(ativo=True).count()), ("Total", total_entradas)])],
+            "saidas": [("Saidas registradas", [("Quantidade", objeto.contas_pagar.filter(ativo=True).count()), ("Total", total_saidas)])],
+            "auditoria": [],
+        }
     else:
         secoes_por_aba = {"resumo": [secoes_detalhe[0], secoes_detalhe[1]], "auditoria": []}
+
     contexto = {
         "configuracao": configuracao,
         "objeto": objeto,
@@ -460,7 +589,7 @@ def excluir_permanente(request, entidade, pk):
             configuracao["singular"],
             dados={"objeto_id": objeto_id, "modo": "permanente"},
         )
-        messages.success(request, f"{configuracao['singular']} excluído permanentemente.")
+        messages.success(request, f"{configuracao['singular']} excluido permanentemente.")
         if request.headers.get("HX-Request"):
             return HttpResponse("", headers={"HX-Redirect": reverse(f"core_{entidade}_lista")})
         return redirect(f"core_{entidade}_lista")

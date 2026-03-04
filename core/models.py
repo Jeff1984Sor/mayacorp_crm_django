@@ -116,6 +116,79 @@ class Servico(ModeloTemporal):
         return self.nome
 
 
+class ContaFinanceira(ModeloTemporal):
+    nome = models.CharField(max_length=150)
+    instituicao = models.CharField(max_length=150, blank=True)
+    saldo_inicial = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class VendaCentral(ModeloTemporal):
+    class Status(models.TextChoices):
+        RASCUNHO = "RASCUNHO", "Rascunho"
+        FATURADA = "FATURADA", "Faturada"
+        CANCELADA = "CANCELADA", "Cancelada"
+
+    titulo = models.CharField(max_length=150)
+    cliente = models.CharField(max_length=150)
+    data_venda = models.DateField(default=timezone.localdate)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.RASCUNHO)
+    valor_bruto = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    desconto = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        self.valor_total = max(self.valor_bruto - self.desconto, 0)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.titulo
+
+
+class Receita(ModeloTemporal):
+    class Status(models.TextChoices):
+        PREVISTA = "PREVISTA", "Prevista"
+        RECEBIDA = "RECEBIDA", "Recebida"
+        ATRASADA = "ATRASADA", "Atrasada"
+
+    descricao = models.CharField(max_length=150)
+    venda = models.ForeignKey(VendaCentral, on_delete=models.SET_NULL, null=True, blank=True, related_name="receitas")
+    conta_financeira = models.ForeignKey(ContaFinanceira, on_delete=models.PROTECT, related_name="receitas")
+    data_recebimento = models.DateField(default=timezone.localdate)
+    valor = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PREVISTA)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.descricao
+
+
+class ContaPagar(ModeloTemporal):
+    class Status(models.TextChoices):
+        ABERTA = "ABERTA", "Aberta"
+        PAGA = "PAGA", "Paga"
+        ATRASADA = "ATRASADA", "Atrasada"
+
+    descricao = models.CharField(max_length=150)
+    fornecedor = models.ForeignKey(Fornecedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="contas_pagar")
+    conta_financeira = models.ForeignKey(ContaFinanceira, on_delete=models.PROTECT, related_name="contas_pagar")
+    data_vencimento = models.DateField(default=timezone.localdate)
+    valor = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ABERTA)
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.descricao
+
+
 class Empresa(ModeloTemporal):
     class StatusAssinatura(models.TextChoices):
         ATIVA = "ATIVA", "Ativa"

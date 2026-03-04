@@ -1,6 +1,18 @@
 from django import forms
 
-from core.models import Empresa, Fornecedor, Plano, Produto, Profissional, Servico, UsuarioAdmin
+from core.models import (
+    ContaFinanceira,
+    ContaPagar,
+    Empresa,
+    Fornecedor,
+    Plano,
+    Produto,
+    Profissional,
+    Receita,
+    Servico,
+    UsuarioAdmin,
+    VendaCentral,
+)
 
 
 class FormularioBase(forms.ModelForm):
@@ -121,3 +133,27 @@ class ServicoFormulario(FormularioBase):
     class Meta(FormularioBase.Meta):
         model = Servico
         fields = ["nome", "descricao", "valor_custo", "valor_venda", "ativo"]
+
+
+class ContaFinanceiraFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = ContaFinanceira
+        fields = ["nome", "instituicao", "saldo_inicial", "ativo", "observacoes"]
+
+
+class VendaCentralFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = VendaCentral
+        fields = ["titulo", "cliente", "data_venda", "status", "valor_bruto", "desconto", "ativo", "observacoes"]
+
+
+class ReceitaFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = Receita
+        fields = ["descricao", "venda", "conta_financeira", "data_recebimento", "valor", "status", "ativo", "observacoes"]
+
+
+class ContaPagarFormulario(FormularioBase):
+    class Meta(FormularioBase.Meta):
+        model = ContaPagar
+        fields = ["descricao", "fornecedor", "conta_financeira", "data_vencimento", "valor", "status", "ativo", "observacoes"]
