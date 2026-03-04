@@ -25,3 +25,8 @@ def campos_modelo(objeto):
     for campo in objeto._meta.fields:
         campos.append((campo.verbose_name or campo.name, getattr(objeto, campo.name)))
     return campos
+
+
+@register.filter
+def campo_formulario(formulario, nome_campo):
+    return formulario[nome_campo]

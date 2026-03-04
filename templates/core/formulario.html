@@ -21,9 +21,11 @@
             <div class="grid gap-4 md:grid-cols-2">
                 {% for nome_campo in campos_secao %}
                 <div class="{% if nome_campo == 'descricao' or nome_campo == 'observacoes' or nome_campo == 'recursos_json' %}md:col-span-2{% endif %}">
-                    <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario[nome_campo].label }}</label>
-                    {{ formulario[nome_campo] }}
-                    {% if formulario[nome_campo].errors %}<p class="mt-1 text-sm text-red-600">{{ formulario[nome_campo].errors|join:", " }}</p>{% endif %}
+                    {% with campo=formulario|campo_formulario:nome_campo %}
+                    <label class="mb-2 block text-sm font-medium text-slate-600">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.errors %}<p class="mt-1 text-sm text-red-600">{{ campo.errors|join:", " }}</p>{% endif %}
+                    {% endwith %}
                 </div>
                 {% endfor %}
             </div>
