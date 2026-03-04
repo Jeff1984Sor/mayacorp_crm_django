@@ -1,0 +1,18 @@
+{% extends "parciais/layout_app.html" %}
+{% block menu %}
+<a class="block rounded-2xl bg-slate-900 px-4 py-3 text-white" href="{% url 'core_dashboard' %}">Dashboard</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'core_profissionais_lista' %}">Profissionais</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'core_planos_lista' %}">Planos</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'core_empresas_lista' %}">Empresas</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'core_auditoria' %}">Auditoria</a>
+{% endblock %}
+{% block conteudo_app %}
+<div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    {% for titulo, valor in cards %}
+    <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <p class="text-sm text-slate-500">{{ titulo }}</p>
+        <p class="mt-4 text-4xl font-semibold">{{ valor }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

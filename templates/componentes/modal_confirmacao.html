@@ -1,0 +1,25 @@
+{% load filtros_core %}
+<div class="fixed inset-0 bg-slate-900/40 p-4 flex items-center justify-center" x-data="{ aberto: true }">
+    <div class="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-2xl border border-white/80">
+        <h3 class="text-xl font-semibold">{{ titulo_modal|default:"Confirmar exclusão" }}</h3>
+        <p class="mt-3 text-sm text-slate-600">{{ texto_modal|default:"Esta ação arquiva ou inativa o registro por padrão." }}</p>
+        <div class="mt-6 flex flex-wrap justify-end gap-3">
+            <button class="rounded-2xl border border-slate-200 px-4 py-2" hx-on:click="document.getElementById('modal-root').innerHTML=''">Cancelar</button>
+            {% nome_rota tenant_tipo entidade 'excluir' as rota_excluir %}
+            <form method="post" hx-post="{% url rota_excluir objeto.pk %}" hx-target="body">
+                {% csrf_token %}
+                <button class="rounded-2xl bg-amber-500 px-4 py-2 text-white">{{ texto_botao_modal|default:"Arquivar" }}</button>
+            </form>
+        </div>
+        {% if pode_excluir_permanente %}
+        {% nome_rota tenant_tipo entidade 'excluir_permanente' as rota_excluir_permanente %}
+        <form method="post" action="{% url rota_excluir_permanente objeto.pk %}" class="mt-6 rounded-3xl bg-rose-50 p-4 border border-rose-100">
+            {% csrf_token %}
+            <p class="text-sm font-medium text-rose-700">Exclusão permanente (somente superadmin)</p>
+            <p class="mt-1 text-xs text-rose-600">Digite <strong>EXCLUIR</strong> para remover definitivamente.</p>
+            <input name="confirmacao_exclusao" class="mt-3 w-full rounded-2xl border border-rose-200 bg-white px-4 py-3" placeholder="EXCLUIR">
+            <button class="mt-3 rounded-2xl bg-rose-600 px-4 py-2 text-white">Excluir permanentemente</button>
+        </form>
+        {% endif %}
+    </div>
+</div>

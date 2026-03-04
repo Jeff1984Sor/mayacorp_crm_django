@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Plataforma SaaS{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primario: { 50: "#eff6ff", 500: "#2563eb", 600: "#1d4ed8", 700: "#1e40af" },
+                        neutro: { 50: "#f8fafc", 100: "#f1f5f9", 200: "#e2e8f0", 500: "#64748b", 900: "#0f172a" },
+                    },
+                    boxShadow: {
+                        glass: "0 20px 60px rgba(15, 23, 42, 0.10)",
+                    },
+                    borderRadius: {
+                        xl4: "2rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: "SF Pro Display", "Segoe UI", ui-rounded, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(96,165,250,.20), transparent 30%),
+                radial-gradient(circle at top left, rgba(148,163,184,.18), transparent 25%),
+                #f8fafc;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800">
+    {% include "componentes/toast.html" %}
+    {% block conteudo %}{% endblock %}
+</body>
+</html>

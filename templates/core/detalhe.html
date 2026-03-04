@@ -1,0 +1,18 @@
+{% load filtros_core %}
+{% extends "core/dashboard.html" %}
+{% block conteudo_app %}
+<div class="space-y-5">
+    <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-slate-500">{{ configuracao.singular }}</p>
+                <h3 class="text-2xl font-semibold">{{ objeto }}</h3>
+            </div>
+            {% nome_rota 'central' entidade 'editar' as rota_editar %}
+            <a href="{% url rota_editar objeto.pk %}" class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Editar</a>
+        </div>
+        <div class="mt-6">{% include "componentes/tabs.html" with abas=abas aba_atual=aba_atual %}</div>
+    </div>
+    {% include "core/parciais/detalhe_conteudo.html" %}
+</div>
+{% endblock %}

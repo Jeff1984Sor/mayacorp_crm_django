@@ -1,0 +1,37 @@
+{% load filtros_core %}
+{% extends "core/dashboard.html" %}
+{% block conteudo_app %}
+<div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <p class="text-sm text-slate-500">{{ configuracao.titulo }}</p>
+            <h3 class="text-2xl font-semibold">{% if objeto %}Editar{% else %}Novo{% endif %} {{ configuracao.singular }}</h3>
+        </div>
+        {% nome_rota 'central' entidade 'lista' as rota_lista %}
+        <a href="{% url rota_lista %}" class="rounded-2xl border border-slate-200 px-4 py-2">Voltar</a>
+    </div>
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% for titulo_secao, campos_secao in configuracao.secoes_formulario %}
+        <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+            <div class="mb-4">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ configuracao.singular }}</p>
+                <h4 class="text-lg font-semibold">{{ titulo_secao }}</h4>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                {% for nome_campo in campos_secao %}
+                <div class="{% if nome_campo == 'descricao' or nome_campo == 'observacoes' or nome_campo == 'recursos_json' %}md:col-span-2{% endif %}">
+                    <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario[nome_campo].label }}</label>
+                    {{ formulario[nome_campo] }}
+                    {% if formulario[nome_campo].errors %}<p class="mt-1 text-sm text-red-600">{{ formulario[nome_campo].errors|join:", " }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+        <div>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

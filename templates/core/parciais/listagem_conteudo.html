@@ -1,0 +1,19 @@
+{% load filtros_core %}
+<div id="lista-conteudo" class="space-y-5">
+    <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <form class="flex flex-col gap-3 md:flex-row" hx-get="" hx-target="#lista-conteudo">
+                <input name="busca" value="{{ busca }}" placeholder="Buscar..." class="rounded-2xl border border-slate-200 px-4 py-3">
+                <select name="status" class="rounded-2xl border border-slate-200 px-4 py-3">
+                    <option value="">Todos</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativos</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativos</option>
+                </select>
+                <button class="rounded-2xl bg-slate-900 px-4 py-3 text-white">Filtrar</button>
+            </form>
+            {% nome_rota 'central' entidade 'novo' as rota_novo %}
+            <a href="{% url rota_novo %}" class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Novo</a>
+        </div>
+    </div>
+    {% include "componentes/tabela_generica.html" %}
+</div>

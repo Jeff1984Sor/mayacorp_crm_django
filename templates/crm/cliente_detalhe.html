@@ -1,0 +1,23 @@
+{% extends "crm/dashboard.html" %}
+{% block conteudo_app %}
+<div class="space-y-5">
+    <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-2xl font-semibold">{{ objeto.nome }}</h3>
+                    {% include "componentes/badge_status.html" with valor=objeto.status texto=objeto.get_status_display %}
+                    {% include "componentes/badge_status.html" with valor=objeto.ativo texto=objeto.ativo|yesno:"Ativo,Inativo" %}
+                </div>
+                <p class="mt-2 text-sm text-slate-500">Documento {{ objeto.documento|default:"não informado" }} | {{ objeto.email|default:"sem e-mail" }}</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'crm_clientes_editar' objeto.pk %}" class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Editar</a>
+                <a href="{% url 'crm_clientes_lista' %}" class="rounded-2xl border border-slate-200 px-5 py-3">Voltar</a>
+            </div>
+        </div>
+        <div class="mt-6">{% include "componentes/tabs.html" with abas=abas aba_atual=aba_atual %}</div>
+    </section>
+    {% include "crm/parciais/cliente_detalhe_conteudo.html" %}
+</div>
+{% endblock %}

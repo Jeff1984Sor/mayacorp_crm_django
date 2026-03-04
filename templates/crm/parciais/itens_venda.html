@@ -1,0 +1,41 @@
+<div class="space-y-5">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h4 class="text-lg font-semibold">Itens da venda</h4>
+            <p class="text-sm text-slate-500">Monte os produtos e serviços da negociação sem sair da tela.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+            <span class="rounded-2xl bg-slate-50 px-3 py-2 text-slate-600">Subtotal: R$ {{ venda.subtotal }}</span>
+            <span class="rounded-2xl bg-slate-50 px-3 py-2 text-slate-600">Desconto: R$ {{ venda.desconto }}</span>
+            <span class="rounded-2xl bg-blue-50 px-3 py-2 text-blue-700">Total: R$ {{ venda.total }}</span>
+        </div>
+    </div>
+    <form method="post" hx-post="{% url 'crm_vendas_itens' venda.pk %}" hx-target="#itens-venda-root" class="grid gap-4 md:grid-cols-5 rounded-3xl border border-slate-100 bg-slate-50 px-4 py-4">
+        {% csrf_token %}
+        {% for campo in formulario_item %}
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-600">{{ campo.label }}</label>
+            {{ campo }}
+        </div>
+        {% endfor %}
+        <div class="md:col-span-5">
+            <button class="rounded-2xl bg-blue-600 px-4 py-3 text-white">Adicionar item</button>
+        </div>
+    </form>
+    <div class="space-y-2">
+        {% for item in itens %}
+        <div class="flex flex-col gap-3 rounded-3xl bg-white border border-slate-100 px-4 py-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="font-medium text-slate-800">{{ item.get_tipo_item_display }}</p>
+                <p class="text-sm text-slate-500">{{ item.quantidade }} x R$ {{ item.valor_unitario }} = R$ {{ item.total }}</p>
+            </div>
+            <form method="post" hx-post="{% url 'crm_vendas_item_remover' venda.pk item.pk %}" hx-target="#itens-venda-root">
+                {% csrf_token %}
+                <button class="rounded-2xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">Remover</button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="rounded-3xl bg-slate-50 px-4 py-6 text-sm text-slate-500">Nenhum item cadastrado.</p>
+        {% endfor %}
+    </div>
+</div>

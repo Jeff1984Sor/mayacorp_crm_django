@@ -1,0 +1,91 @@
+<div id="detalhe-conteudo" class="grid gap-5 xl:grid-cols-[1.35fr_0.95fr]">
+    <div class="space-y-5">
+        {% if aba_atual == 'auditoria' %}
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">Trilha completa</h4>
+            <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+        </section>
+        {% elif aba_atual == 'itens' %}
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <div class="flex items-center justify-between">
+                <h4 class="text-lg font-semibold">Itens da negociação</h4>
+                <div class="flex gap-2 text-sm text-slate-500">
+                    <span class="rounded-2xl bg-slate-50 px-3 py-2">{{ objeto.itens.count }} itens</span>
+                    <span class="rounded-2xl bg-slate-50 px-3 py-2">R$ {{ objeto.total }}</span>
+                </div>
+            </div>
+            <div class="mt-5 rounded-3xl border border-slate-100 bg-white px-5 py-5" id="itens-venda-root" hx-get="{% url 'crm_vendas_itens' objeto.pk %}" hx-trigger="load"></div>
+        </section>
+        {% else %}
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <div class="grid gap-4 md:grid-cols-4">
+                <div class="rounded-3xl bg-slate-50 px-5 py-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Subtotal</p>
+                    <p class="mt-2 text-xl font-semibold">R$ {{ objeto.subtotal }}</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 px-5 py-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Desconto</p>
+                    <p class="mt-2 text-xl font-semibold">R$ {{ objeto.desconto }}</p>
+                </div>
+                <div class="rounded-3xl bg-blue-50 px-5 py-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-blue-500">Total</p>
+                    <p class="mt-2 text-xl font-semibold text-blue-700">R$ {{ objeto.total }}</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 px-5 py-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Status</p>
+                    <p class="mt-2 text-xl font-semibold">{{ objeto.get_status_display }}</p>
+                </div>
+            </div>
+        </section>
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">{% if aba_atual == 'pagamento' %}Pagamento{% else %}Resumo da venda{% endif %}</h4>
+            {% if aba_atual == 'pagamento' %}
+            <div class="mt-4 space-y-3">
+                <div class="rounded-3xl bg-slate-50 px-4 py-4">
+                    <p class="text-sm font-medium text-slate-800">Situação financeira</p>
+                    <p class="mt-1 text-sm text-slate-500">Placeholder MVP para forma de pagamento, parcelas e conciliação.</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 px-4 py-4">
+                    <p class="text-sm font-medium text-slate-800">Desconto aplicado</p>
+                    <p class="mt-1 text-sm text-slate-500">R$ {{ objeto.desconto }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="mt-4 grid gap-3 md:grid-cols-2">
+                {% for titulo_secao, itens in secoes_detalhe %}
+                    {% for campo, valor in itens %}
+                    <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ campo }}</p>
+                        <p class="mt-1 text-sm text-slate-700">{{ valor|default:"-" }}</p>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+    </div>
+    <aside class="space-y-5">
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">Contexto</h4>
+            <div class="mt-4 space-y-3 text-sm">
+                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                    <p class="text-slate-400">Cliente</p>
+                    <p class="mt-1 font-medium text-slate-800">{{ objeto.cliente }}</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                    <p class="text-slate-400">Vendedor</p>
+                    <p class="mt-1 font-medium text-slate-800">{{ objeto.vendedor_usuario|default:objeto.vendedor_profissional|default:"Não definido" }}</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                    <p class="text-slate-400">Criada em</p>
+                    <p class="mt-1 font-medium text-slate-800">{{ objeto.criado_em|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </section>
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">Auditoria recente</h4>
+            <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+        </section>
+    </aside>
+</div>

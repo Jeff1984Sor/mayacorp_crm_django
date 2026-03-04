@@ -1,0 +1,68 @@
+{% extends "crm/dashboard.html" %}
+{% block conteudo_app %}
+<div class="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+    <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Vendas</p>
+                <h3 class="mt-2 text-2xl font-semibold">{% if objeto %}Editar venda{% else %}Nova venda{% endif %}</h3>
+                <p class="mt-2 text-sm text-slate-500">Monte a negociação, defina os responsáveis e acompanhe os totais em tempo real.</p>
+            </div>
+            <a href="{% url 'crm_vendas_lista' %}" class="rounded-2xl border border-slate-200 px-4 py-2">Voltar</a>
+        </div>
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Contexto comercial</h4>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.cliente.label }}</label>
+                        {{ formulario.cliente }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.vendedor_usuario.label }}</label>
+                        {{ formulario.vendedor_usuario }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.vendedor_profissional.label }}</label>
+                        {{ formulario.vendedor_profissional }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.data.label }}</label>
+                        {{ formulario.data }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.status.label }}</label>
+                        {{ formulario.status }}
+                    </div>
+                </div>
+            </section>
+            <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Condições financeiras</h4>
+                <div class="mt-4 grid gap-4">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.desconto.label }}</label>
+                        {{ formulario.desconto }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.observacoes.label }}</label>
+                        {{ formulario.observacoes }}
+                    </div>
+                </div>
+            </section>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Salvar venda</button>
+        </form>
+        {% if objeto %}
+        <div class="mt-8 rounded-3xl border border-slate-100 bg-white px-5 py-5" id="itens-venda-root" hx-get="{% url 'crm_vendas_itens' objeto.pk %}" hx-trigger="load"></div>
+        {% endif %}
+    </section>
+    <aside class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <h4 class="text-lg font-semibold">Checklist da negociação</h4>
+        <div class="mt-4 space-y-3 text-sm text-slate-500">
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Vendas fechadas não podem ser editadas, apenas canceladas.</p>
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Adicione os itens logo após salvar para recalcular subtotal e total.</p>
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Use desconto com parcimônia para manter previsibilidade da margem.</p>
+        </div>
+    </aside>
+</div>
+{% endblock %}

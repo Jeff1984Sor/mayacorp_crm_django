@@ -1,0 +1,8 @@
+{% load filtros_core %}
+{% if coluna == 'ativo' %}
+    {% include "componentes/badge_status.html" with valor=objeto.ativo texto=objeto.ativo|yesno:"Ativo,Inativo" %}
+{% elif coluna == 'cliente' %}
+    {{ objeto.cliente }}
+{% else %}
+    {{ objeto|obter_atributo:coluna }}
+{% endif %}

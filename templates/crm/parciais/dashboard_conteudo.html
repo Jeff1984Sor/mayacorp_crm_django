@@ -1,0 +1,73 @@
+<div id="dashboard-conteudo" class="space-y-5">
+    <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <form method="get" hx-get="{% url 'crm_dashboard' %}" hx-target="#dashboard-conteudo" class="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Status do cliente</label>
+                <select name="status_cliente" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                    <option value="">Todos</option>
+                    {% for valor, rotulo in opcoes_status_cliente %}
+                    <option value="{{ valor }}" {% if filtros_dashboard.status_cliente == valor %}selected{% endif %}>{{ rotulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Status da venda</label>
+                <select name="status_venda" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                    <option value="">Todos</option>
+                    {% for valor, rotulo in opcoes_status_venda %}
+                    <option value="{{ valor }}" {% if filtros_dashboard.status_venda == valor %}selected{% endif %}>{{ rotulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-1 xl:col-span-1 flex items-end">
+                <button class="w-full rounded-2xl bg-slate-900 px-4 py-3 text-white">Atualizar</button>
+            </div>
+        </form>
+    </section>
+    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {% for titulo, valor in cards %}
+        <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <p class="text-sm text-slate-500">{{ titulo }}</p>
+            <p class="mt-4 text-4xl font-semibold">{{ valor }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="grid gap-5 xl:grid-cols-2">
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h3 class="text-lg font-semibold">Clientes recentes</h3>
+            <div class="mt-4 space-y-3">
+                {% for cliente in clientes_recentes %}
+                <a href="{% url 'crm_clientes_detalhe' cliente.pk %}" class="block rounded-3xl bg-slate-50 px-4 py-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="font-medium text-slate-800">{{ cliente.nome }}</p>
+                            <p class="text-sm text-slate-500">{{ cliente.get_status_display }} | {{ cliente.email|default:"sem e-mail" }}</p>
+                        </div>
+                        <span class="text-sm text-slate-400">{{ cliente.atualizado_em|date:"d/m H:i" }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-sm text-slate-500">Sem clientes recentes.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h3 class="text-lg font-semibold">Vendas recentes</h3>
+            <div class="mt-4 space-y-3">
+                {% for venda in vendas_recentes %}
+                <a href="{% url 'crm_vendas_detalhe' venda.pk %}" class="block rounded-3xl bg-slate-50 px-4 py-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="font-medium text-slate-800">Venda #{{ venda.pk }}</p>
+                            <p class="text-sm text-slate-500">{{ venda.cliente }} | {{ venda.get_status_display }}</p>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">R$ {{ venda.total }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-sm text-slate-500">Sem vendas recentes.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+{% load filtros_core %}
+<div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full text-sm">
+        <thead class="bg-slate-50">
+            <tr>
+                {% for coluna, rotulo in configuracao.colunas %}
+                <th class="px-5 py-4 text-left font-medium text-slate-500">
+                    <a href="?ordem={{ coluna }}" hx-get="?ordem={{ coluna }}" hx-target="#lista-conteudo">{{ rotulo }}</a>
+                </th>
+                {% endfor %}
+                <th class="px-5 py-4 text-right font-medium text-slate-500">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for objeto in pagina %}
+            <tr>
+                {% for coluna, rotulo in configuracao.colunas %}
+                <td class="px-5 py-4">
+                    {% include "componentes/valor_celula.html" with objeto=objeto coluna=coluna %}
+                </td>
+                {% endfor %}
+                <td class="px-5 py-4">
+                    <div class="flex justify-end gap-2">
+                        {% nome_rota tenant_tipo entidade 'detalhe' as rota_detalhe %}
+                        {% nome_rota tenant_tipo entidade 'editar' as rota_editar %}
+                        {% nome_rota tenant_tipo entidade 'modal_excluir' as rota_excluir %}
+                        <a class="rounded-xl bg-slate-100 px-3 py-2" href="{% url rota_detalhe objeto.pk %}">Ver</a>
+                        <a class="rounded-xl bg-slate-100 px-3 py-2" href="{% url rota_editar objeto.pk %}">Editar</a>
+                        <button class="rounded-xl bg-rose-50 px-3 py-2 text-rose-700" hx-get="{% url rota_excluir objeto.pk %}" hx-target="#modal-root">Excluir</button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="10" class="px-6 py-16 text-center text-slate-500">Nenhum registro encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="flex items-center justify-between px-5 py-4 text-sm text-slate-500">
+        <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+        <div class="flex gap-2">
+            {% if pagina.has_previous %}
+            <a href="?pagina={{ pagina.previous_page_number }}" hx-get="?pagina={{ pagina.previous_page_number }}" hx-target="#lista-conteudo">Anterior</a>
+            {% endif %}
+            {% if pagina.has_next %}
+            <a href="?pagina={{ pagina.next_page_number }}" hx-get="?pagina={{ pagina.next_page_number }}" hx-target="#lista-conteudo">Próxima</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

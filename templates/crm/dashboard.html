@@ -1,0 +1,12 @@
+{% extends "parciais/layout_app.html" %}
+{% block menu %}
+<a class="block rounded-2xl bg-slate-900 px-4 py-3 text-white" href="{% url 'crm_dashboard' %}">Dashboard</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'crm_profissionais_lista' %}">Profissionais</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'crm_clientes_lista' %}">Clientes</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'crm_produtos_lista' %}">Produtos</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'crm_servicos_lista' %}">Serviços</a>
+<a class="block rounded-2xl px-4 py-3 hover:bg-slate-100" href="{% url 'crm_vendas_lista' %}">Vendas</a>
+{% endblock %}
+{% block conteudo_app %}
+{% include "crm/parciais/dashboard_conteudo.html" %}
+{% endblock %}

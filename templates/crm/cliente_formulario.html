@@ -1,0 +1,73 @@
+{% extends "crm/dashboard.html" %}
+{% block conteudo_app %}
+<div class="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+    <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Clientes</p>
+                <h3 class="mt-2 text-2xl font-semibold">{% if objeto %}Editar cliente{% else %}Novo cliente{% endif %}</h3>
+                <p class="mt-2 text-sm text-slate-500">Cadastre dados comerciais, contato e responsabilidade do relacionamento.</p>
+            </div>
+            <a href="{% url 'crm_clientes_lista' %}" class="rounded-2xl border border-slate-200 px-4 py-2">Voltar</a>
+        </div>
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Identificação</h4>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.nome.label }}</label>
+                        {{ formulario.nome }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.documento.label }}</label>
+                        {{ formulario.documento }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.status.label }}</label>
+                        {{ formulario.status }}
+                    </div>
+                </div>
+            </section>
+            <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Contato</h4>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.email.label }}</label>
+                        {{ formulario.email }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.telefone.label }}</label>
+                        {{ formulario.telefone }}
+                    </div>
+                </div>
+            </section>
+            <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Responsabilidade</h4>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.responsavel_usuario.label }}</label>
+                        {{ formulario.responsavel_usuario }}
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-600">{{ formulario.responsavel_profissional.label }}</label>
+                        {{ formulario.responsavel_profissional }}
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-2 flex items-center gap-3 text-sm font-medium text-slate-600">{{ formulario.ativo }} {{ formulario.ativo.label }}</label>
+                    </div>
+                </div>
+            </section>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Salvar cliente</button>
+        </form>
+    </section>
+    <aside class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <h4 class="text-lg font-semibold">Boas práticas</h4>
+        <div class="mt-4 space-y-3 text-sm text-slate-500">
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Use o status corretamente para manter o funil comercial confiável.</p>
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Defina um responsável para evitar clientes sem dono comercial.</p>
+            <p class="rounded-2xl bg-slate-50 px-4 py-3">Se o cliente já tiver vendas, a exclusão será convertida em inativação.</p>
+        </div>
+    </aside>
+</div>
+{% endblock %}

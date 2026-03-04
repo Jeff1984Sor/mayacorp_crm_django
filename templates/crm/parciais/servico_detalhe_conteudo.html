@@ -1,0 +1,43 @@
+<div id="detalhe-conteudo" class="grid gap-5 xl:grid-cols-[1.35fr_0.95fr]">
+    <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-2xl font-semibold">{{ objeto.nome }}</h3>
+                <p class="mt-2 text-sm text-slate-500">Serviço comercial</p>
+            </div>
+            <a href="{% url 'crm_servicos_editar' objeto.pk %}" class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Editar</a>
+        </div>
+        <div class="mt-6 grid gap-3 md:grid-cols-2">
+            {% for titulo_secao, itens in secoes_detalhe %}
+                {% for campo, valor in itens %}
+                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ campo }}</p>
+                    <p class="mt-1 text-sm text-slate-700">{{ valor|default:"-" }}</p>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </section>
+    <aside class="space-y-5">
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">Timeline do serviço</h4>
+            <div class="mt-4 space-y-3">
+                {% for evento in timeline_atividades %}
+                <div class="rounded-3xl bg-slate-50 px-4 py-4">
+                    <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                        <p class="text-sm font-medium text-slate-800">{{ evento.titulo }}</p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ evento.data|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <p class="mt-2 text-sm text-slate-500">{{ evento.descricao }}</p>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500">Nenhum evento registrado para este serviço.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            <h4 class="text-lg font-semibold">Auditoria recente</h4>
+            <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+        </section>
+    </aside>
+</div>

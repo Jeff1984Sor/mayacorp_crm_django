@@ -1,0 +1,7 @@
+<div x-data="{ aberto: true }" class="fixed right-4 top-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div x-show="aberto" x-init="setTimeout(() => aberto = false, 3000)" class="rounded-2xl bg-slate-900 px-4 py-3 text-sm text-white shadow-xl">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>

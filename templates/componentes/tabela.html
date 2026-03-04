@@ -1,0 +1,48 @@
+<div class="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+            <tr>
+                {% for coluna, rotulo in configuracao.colunas %}
+                <th class="px-5 py-4 text-left">
+                    <a hx-get="" hx-target="#lista-conteudo" href="?ordem={{ coluna }}" class="font-medium">{{ rotulo }}</a>
+                </th>
+                {% endfor %}
+                <th class="px-5 py-4 text-right">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for objeto in pagina %}
+            <tr class="hover:bg-slate-50/70">
+                {% for coluna, rotulo in configuracao.colunas %}
+                <td class="px-5 py-4">
+                    {% with valor=objeto|default_if_none:'' %}
+                    {% if coluna == 'ativo' %}
+                        {% include "componentes/badge_status.html" with valor=objeto.ativo texto=objeto.ativo|yesno:"Ativo,Inativo" %}
+                    {% else %}
+                        {{ objeto|attr:coluna }}
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                {% endfor %}
+                <td class="px-5 py-4">
+                    <div class="flex justify-end gap-2">
+                        <a class="rounded-xl bg-slate-100 px-3 py-2" href="{% url request.resolver_match.namespace|default:'' %}"> </a>
+                        <a class="rounded-xl bg-slate-100 px-3 py-2" href="{% if tenant_tipo == 'central' %}{% url 'core_'|add:entidade|add:'_detalhe' objeto.pk %}{% else %}{% url 'crm_'|add:entidade|add:'_detalhe' objeto.pk %}{% endif %}">Ver</a>
+                        <a class="rounded-xl bg-slate-100 px-3 py-2" href="{% if tenant_tipo == 'central' %}{% url 'core_'|add:entidade|add:'_editar' objeto.pk %}{% else %}{% url 'crm_'|add:entidade|add:'_editar' objeto.pk %}{% endif %}">Editar</a>
+                        <button class="rounded-xl bg-rose-50 px-3 py-2 text-rose-700" hx-get="{% if tenant_tipo == 'central' %}{% url 'core_'|add:entidade|add:'_modal_excluir' objeto.pk %}{% else %}{% url 'crm_'|add:entidade|add:'_modal_excluir' objeto.pk %}{% endif %}" hx-target="#modal-root">Excluir</button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="px-6 py-16 text-center">
+                    <div class="mx-auto max-w-md rounded-3xl bg-slate-50 p-8">
+                        <p class="text-lg font-semibold">Nenhum registro encontrado</p>
+                        <p class="mt-2 text-sm text-slate-500">Ajuste os filtros ou crie um novo cadastro.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,24 @@
+{% extends "crm/dashboard.html" %}
+{% block conteudo_app %}
+<section class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Serviços</p>
+            <h3 class="mt-2 text-2xl font-semibold">{% if objeto %}Editar serviço{% else %}Novo serviço{% endif %}</h3>
+        </div>
+        <a href="{% url 'crm_servicos_lista' %}" class="rounded-2xl border border-slate-200 px-4 py-2">Voltar</a>
+    </div>
+    <form method="post" class="grid gap-4 md:grid-cols-2">
+        {% csrf_token %}
+        {% for campo in formulario %}
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-600">{{ campo.label }}</label>
+            {{ campo }}
+        </div>
+        {% endfor %}
+        <div class="md:col-span-2">
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Salvar serviço</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

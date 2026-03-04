@@ -1,0 +1,91 @@
+<div id="detalhe-conteudo">
+    {% if entidade == 'vendas' %}
+    <div class="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
+        <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            {% if aba_atual == 'auditoria' %}
+            <div class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Trilha completa</h4>
+                <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+            </div>
+            {% else %}
+                {% for titulo_secao, itens in secoes_detalhe %}
+                <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5 {% if not forloop.first %}mt-5{% endif %}">
+                    <h4 class="text-lg font-semibold">{{ titulo_secao }}</h4>
+                    <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        {% for campo, valor in itens %}
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ campo }}</p>
+                            <p class="mt-1 text-sm text-slate-700">{{ valor|default:"-" }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+                {% if aba_atual == 'itens' %}
+                <div class="mt-5 rounded-3xl border border-slate-100 bg-white px-5 py-5" id="itens-venda-root" hx-get="{% url 'crm_vendas_itens' objeto.pk %}" hx-trigger="load"></div>
+                {% endif %}
+            {% endif %}
+        </div>
+        <aside class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            {% if aba_atual == 'auditoria' %}
+            <h4 class="text-lg font-semibold">Resumo da aba</h4>
+            <p class="mt-3 text-sm text-slate-500">A linha do tempo completa está na área principal.</p>
+            {% else %}
+            <h4 class="text-lg font-semibold">Auditoria recente</h4>
+            <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+            {% endif %}
+        </aside>
+    </div>
+    {% else %}
+    <div class="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
+        <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70 space-y-5">
+            {% if entidade == 'profissionais' and aba_atual == 'agenda' %}
+            <div class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Timeline profissional</h4>
+                <div class="mt-4 space-y-3">
+                    {% for evento in timeline_atividades %}
+                    <div class="rounded-3xl bg-slate-50 px-4 py-4">
+                        <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                            <p class="text-sm font-medium text-slate-800">{{ evento.titulo }}</p>
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ evento.data|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <p class="mt-2 text-sm text-slate-500">{{ evento.descricao }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-500">Nenhuma atividade registrada para este profissional.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% elif aba_atual == 'auditoria' %}
+            <div class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                <h4 class="text-lg font-semibold">Trilha completa</h4>
+                <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+            </div>
+            {% else %}
+                {% for titulo_secao, itens in secoes_detalhe %}
+                <section class="rounded-3xl border border-slate-100 bg-white px-5 py-5">
+                    <h4 class="text-lg font-semibold">{{ titulo_secao }}</h4>
+                    <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        {% for campo, valor in itens %}
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ campo }}</p>
+                            <p class="mt-1 text-sm text-slate-700">{{ valor|default:"-" }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <aside class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+            {% if aba_atual == 'auditoria' %}
+            <h4 class="text-lg font-semibold">Resumo da aba</h4>
+            <p class="mt-3 text-sm text-slate-500">A linha do tempo completa está na área principal.</p>
+            {% else %}
+            <h4 class="text-lg font-semibold">Auditoria recente</h4>
+            <div class="mt-4">{% include "componentes/trilha_auditoria.html" with auditorias=auditorias %}</div>
+            {% endif %}
+        </aside>
+    </div>
+    {% endif %}
+</div>

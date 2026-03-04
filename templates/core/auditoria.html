@@ -1,0 +1,41 @@
+{% extends "core/dashboard.html" %}
+{% block conteudo_app %}
+<div class="space-y-5">
+    <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        <form method="get" class="grid gap-4 md:grid-cols-4">
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Usuário</label>
+                <select name="usuario" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                    <option value="">Todos</option>
+                    {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}" {% if filtros.usuario == usuario.id|stringformat:"s" %}selected{% endif %}>{{ usuario.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Ação</label>
+                <select name="acao" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                    <option value="">Todas</option>
+                    {% for valor, rotulo in acoes %}
+                    <option value="{{ valor }}" {% if filtros.acao == valor %}selected{% endif %}>{{ rotulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Data inicial</label>
+                <input type="date" name="data_inicial" value="{{ filtros.data_inicial }}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-600">Data final</label>
+                <input type="date" name="data_final" value="{{ filtros.data_final }}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+            </div>
+            <div class="md:col-span-4">
+                <button class="rounded-2xl bg-blue-600 px-5 py-3 text-white">Filtrar auditoria</button>
+            </div>
+        </form>
+    </div>
+    <div class="rounded-[2rem] bg-white/80 backdrop-blur-xl p-6 shadow-glass border border-white/70">
+        {% include "componentes/trilha_auditoria.html" with auditorias=pagina %}
+    </div>
+</div>
+{% endblock %}
